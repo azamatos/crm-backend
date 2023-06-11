@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model article {
+  id          Int        @id @default(autoincrement())
+  name        String     @unique
+  description String
+  image_url   String
+  incomings   incoming[]
+  orders      order[]
+}
+
+model incoming {
+  id        Int        @id @default(autoincrement())
+  count     Int
+  price     Int
+  isSold    Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  outgoings outgoing[]
+  article   article    @relation(fields: [articleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  articleId Int
+}
+
+model outgoing {
+  id            Int          @id @default(autoincrement())
+  price         Int
+  type          outgoingType @default(INCOMING)
+  count         Int          @default(1)
+  createdAt     DateTime     @default(now())
+  incoming      incoming?    @relation(fields: [incomingId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  incomingId    Int?
+  deliveryman   deliveryman? @relation(fields: [deliverymanId], references: [id])
+  deliverymanId Int?
+  order         order?       @relation(fields: [orderId], references: [id])
+  orderId       Int?         @unique
+}
+
+model order {
+  id         Int       @id @default(autoincrement())
+  count      Int
+  price      Int
+  customer   customer  @relation(fields: [customerId], references: [id])
+  completed  Boolean   @default(false)
+  outgoing   outgoing?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  article    article   @relation(fields: [articleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  articleId  Int
+  customerId Int
+  outgoingId Int
+}
+
+model city {
+  id        Int        @id @default(autoincrement())
+  name      String
+  customers customer[]
+  country   country    @relation(fields: [countryId], references: [id])
+  countryId Int
+}
+
+model country {
+  id     Int    @id @default(autoincrement())
+  name   String
+  cities city[]
+}
+
+model customer {
+  id          Int     @id @default(autoincrement())
+  name        String
+  phoneNumber String?
+  desciption  String?
+  city        city?   @relation(fields: [cityId], references: [id])
+  cityId      Int
+  orders      order[]
+}
+
+model deliveryman {
+  id          Int     @id @default(autoincrement())
+  name        String
+  phoneNumber String?
+  desciption  String?
+
+  outgoings outgoing[]
+}
+
+enum outgoingType {
+  INCOMING
+  DELIVERY
+  ORDER
+}

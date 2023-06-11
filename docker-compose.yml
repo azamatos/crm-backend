@@ -1,0 +1,53 @@
+version: '3.9'
+
+services:
+  # api:
+  #   build:
+  #     dockerfile: Dockerfile
+
+  #     context: .
+  #     # Only will build development stage from our dockerfile
+  #     target: development
+  #   container_name: nest_api
+  #   env_file:
+  #     - .env
+  #   volumes:
+  #     - api-data:/usr/src/app
+  #   # Run in dev Mode: npm run start:dev
+  #   command: [ sh, -c, "npm run prisma:migrate & npm run start:dev" ]
+  #   ports:
+  #     - 3000:3000
+  #   depends_on:
+  #     - postgres
+  #   restart: 'always'
+  #   networks:
+  #     - prisma-network
+  postgres:
+    image: postgres
+    container_name: backend-db
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}'
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - prisma-network
+networks:
+  prisma-network:
+
+
+volumes:
+  api-data:
+  postgres-data:
