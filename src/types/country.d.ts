@@ -1,10 +1,14 @@
 interface Country {
   id: number;
   name: string;
-  city: CityUpdateDTO[];
+  cities: Pick<City, 'id' | 'name'>[];
 }
 
 interface CountryUpdateDTO {
   id: number;
+  name: string;
+}
+
+interface CountryCreateDTO {
   name: string;
 }

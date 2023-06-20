@@ -2,8 +2,6 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 
 // project imports
 import { PrismaService } from '../prisma/prisma.service';
-import { getOutgoingCount } from 'src/utils/serviceMappings';
-import { getUploadedImage } from 'src/utils/uploadUtils';
 
 @Injectable()
 export class ArticleService {
@@ -20,84 +18,75 @@ export class ArticleService {
 
   async getAll(): Promise<BasicArticle[]> {
     try {
-      const articles = await this.prisma.article.findMany({
+      return this.prisma.article.findMany();
+    } catch (err) {
+      throw new BadRequestException('Something went wrong');
+    }
+  }
+
+  async getIncomes(articleId: string): Promise<ArticleIncomes> {
+    const id = Number(articleId);
+    try {
+      return await this.prisma.article.findFirst({
+        where: {
+          id,
+        },
+        select: {
+          id: true,
+          createdAt: true,
+          description: true,
+          imageUrl: true,
+          name: true,
+          articleIncomes: {
+            select: {
+              count: true,
+              primePrice: true,
+              sellPrice: true,
+              createdAt: true,
+            },
+          },
+        },
+      });
+    } catch (err) {
+      throw new BadRequestException('Please check ur input data and rights');
+    }
+  }
+
+  async getOutgoings(articleId: string): Promise<ArticleOutgoings> {
+    const id = Number(articleId);
+    try {
+      return await this.prisma.article.findFirst({
+        where: {
+          id,
+        },
         select: {
           id: true,
           name: true,
+          imageUrl: true,
           description: true,
-          image_url: true,
-          incomings: {
+          createdAt: true,
+          articleOutgoings: {
             select: {
-              id: true,
               count: true,
-              price: true,
-              outgoings: {
+              createdAt: true,
+              description: true,
+              sum: true,
+              customer: {
                 select: {
                   id: true,
-                  count: true,
-                  price: true,
-                },
-              },
-            },
-          },
-          orders: {
-            select: {
-              id: true,
-              count: true,
-              price: true,
-              outgoing: {
-                select: {
-                  id: true,
-                  count: true,
-                  price: true,
+                  name: true,
                 },
               },
             },
           },
         },
       });
-
-      const result: BasicArticle[] = articles?.map((article) => {
-        const image = getUploadedImage(article.image_url);
-
-        let incomingsTotalCount = 0;
-        let incomingsSoldCount = 0;
-        article?.incomings?.forEach((incoming) => {
-          const outgoingsCount = getOutgoingCount(incoming?.outgoings);
-
-          incomingsTotalCount += incoming.count;
-          incomingsSoldCount += outgoingsCount;
-        });
-
-        let ordersTotalCount = 0;
-        let ordersSoldCount = 0;
-        article?.orders?.forEach((order) => {
-          ordersTotalCount += order.count;
-          ordersSoldCount += order.outgoing?.count || 0;
-        });
-
-        return {
-          id: article.id,
-          name: article.name,
-          description: article.description,
-          image,
-          orders: {
-            ordersTotalCount,
-            ordersSoldCount,
-          },
-          incomings: {
-            incomingsTotalCount,
-            incomingsSoldCount,
-          },
-        };
-      });
-      return result;
     } catch (err) {
-      throw new BadRequestException('Something went wrong');
+      throw new BadRequestException('Please check ur input data and rights');
     }
   }
 
-  async getById(articleId: string) {
+  async getById(articleId: string): Promise<BasicArticle> {
     const id = Number(articleId);
     try {
       return await this.prisma.article.findFirst({
@@ -110,7 +99,10 @@ export class ArticleService {
     }
   }
 
-  async update(id: number, articleUpdateDTO: ArticleUpdateDTO) {
+  async update(
+    id: number,
+    articleUpdateDTO: ArticleUpdateDTO,
+  ): Promise<BasicArticle> {
     try {
       return await this.prisma.article.update({
         where: { id },

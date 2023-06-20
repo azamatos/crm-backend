@@ -1,34 +1,53 @@
-interface IncomingCreateDTO {
-  articleId: number;
-  type: IncomingType;
-  cityId: number;
-  customer: Customer;
-  primeCost?: number;
-  count: number;
-  price: number;
+interface Incoming {
+  id: number;
   isSold: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  outgoings?: Omit<Outgoing[], 'incoming'>;
+  articleIncomes?: Omit<ArticleIncome[], 'incoming'>;
+}
+
+interface CustomerIncoming extends BasicIncoming {
+  articleIncomes: Omit<ArticleIncome, 'incoming'>[];
+}
+
+interface BasicIncoming {
+  id: number;
+  isSold: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface IncomingCreateDTO {
+  isSold: boolean;
+  customerId?: number;
 }
 
 interface IncomingUpdateDTO {
   id: number;
-  articleId?: number;
-  count?: number;
-  price?: number;
-  isSold?: boolean;
+  customerId?: number;
 }
 
-interface Incoming {
-  id: number;
+interface ArticleIncome {
+  sellPrice: number;
+  primePrice: number;
   count: number;
-  price: number;
-  isSold: boolean;
-  article: ArticleUpdateDTO;
-  createdAt: Date;
-  updatedAt: Date;
-  outgoings?: Outgoing[];
+  article: BasicArticle;
+  incoming: Omit<Incoming, 'articleIncomes'>;
 }
 
-interface CurrentIncomingsCount {
-  id: number;
-  currentCount: number;
+interface ArticleIncomeCreateDTO {
+  sellPrice: number;
+  primePrice: number;
+  count: number;
+  articleId: number;
+  incomingId: number;
+}
+
+interface ArticleIncomeUpdateDTO {
+  sellPrice?: number;
+  primePrice?: number;
+  count?: number;
+  articleId?: number;
+  incomingId?: number;
 }

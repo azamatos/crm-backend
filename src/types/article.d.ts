@@ -1,53 +1,37 @@
 interface ArticleCreateDTO {
   name: string;
   description: string;
-  image_url: string;
+  imageUrl?: string;
 }
 
 interface ArticleUpdateDTO {
   id: number;
   name?: string;
   description?: string;
-  image_url?: string;
+  imageUrl?: string;
 }
 
 interface Article {
   id: number;
   name: string;
-  description: string;
-  image_url: string;
-  incomings: Incoming[];
-  orders?: Order[];
+  description?: string;
+  imageUrl?: string;
+  articleIncomes: Omit<ArticleIncome[], 'article'>;
+  articleOrders: Omit<ArticleOrder[], 'article'>;
+  articleOutgoings: Omit<ArticleOutgoing[], 'article'>;
 }
 
 interface BasicArticle {
   id: number;
   name: string;
-  description: string;
-  image: {
-    name: string;
-    file: string;
-  };
-  incomings: {
-    incomingsSoldCount: number;
-    incomingsTotalCount: number;
-  };
-  orders: {
-    ordersSoldCount: number;
-    ordersTotalCount: number;
-  };
+  description?: string;
+  imageUrl?: string;
 }
 
-interface DependencyArticle {
-  id: number;
-  name: string;
-  description: string;
+interface ArticleOutgoings extends BasicArticle {
+  articleOutgoings: Omit<ArticleOutgoing, 'outgoing' | 'article'>[];
 }
 
-interface ArticleAction {
-  id: number;
-  price: number;
-  incomingCount: number;
-  soldCount: number;
-  leftCount: number;
+interface ArticleIncomes extends BasicArticle {
+  articleIncomes: Omit<ArticleIncome, 'article', 'incoming'>[];
 }

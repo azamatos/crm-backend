@@ -2,19 +2,16 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 
 // project imports
 import { PrismaService } from '../prisma/prisma.service';
-import { getOutgoingCount } from 'src/utils/serviceMappings';
 import { convertExcelToIncoming } from 'src/utils/uploadUtils';
 
 @Injectable()
 export class IncomingService {
   constructor(private prisma: PrismaService) {}
-  async create(createDTO: IncomingCreateDTO) {
+  async create(createDTO: IncomingCreateDTO): Promise<Incoming> {
     try {
-      const incoming = await this.prisma.incoming.create({
+      return await this.prisma.incoming.create({
         data: createDTO,
       });
-
-      return incoming;
     } catch (err) {
       throw new BadRequestException('Wrong input data');
     }
@@ -22,19 +19,11 @@ export class IncomingService {
 
   async getAll() {
     try {
-      const incomings = await this.prisma.incoming.findMany({
+      return await this.prisma.incoming.findMany({
         where: { isSold: false },
-        select: {
-          id: true,
-          count: true,
-          outgoings: true,
-          price: true,
-          createdAt: true,
-          updatedAt: true,
-        },
       });
 
-      return incomings.length > 0 ? incomings : ([] as Incoming[]);
+      // return incomings.length > 0 ? incomings : ([] as Incoming[]);
     } catch (err) {
       throw new BadRequestException('Something went wrong');
     }
@@ -44,16 +33,6 @@ export class IncomingService {
     const id = Number(incomingId);
     try {
       return await this.prisma.incoming.findFirst({
-        select: {
-          article: true,
-          count: true,
-          id: true,
-          isSold: true,
-          price: true,
-          outgoings: true,
-          createdAt: true,
-          updatedAt: true,
-        },
         where: {
           id,
         },
@@ -63,33 +42,33 @@ export class IncomingService {
     }
   }
 
-  async getOrderedByDate(articleId: number): Promise<Incoming[]> {
-    try {
-      const incomings = await this.prisma.incoming.findMany({
-        where: { articleId },
-        orderBy: { createdAt: 'asc' },
-        select: {
-          id: true,
-          count: true,
-          isSold: true,
-          price: true,
-          outgoings: true,
-          articleId: true,
-        },
-      });
+  // async getOrderedByDate(articleId: number): Promise<Incoming[]> {
+  //   try {
+  //     const incomings = await this.prisma.incoming.findMany({
+  //       where: { articleId },
+  //       orderBy: { createdAt: 'asc' },
+  //       select: {
+  //         id: true,
+  //         count: true,
+  //         isSold: true,
+  //         price: true,
+  //         outgoings: true,
+  //         articleId: true,
+  //       },
+  //     });
 
-      return incomings?.map((incoming) => {
-        const outgoingsCount = getOutgoingCount(incoming?.outgoings);
+  //     return incomings?.map((incoming) => {
+  //       const outgoingsCount = getOutgoingCount(incoming?.outgoings);
 
-        return {
-          ...incoming,
-          count: incoming.count - outgoingsCount,
-        };
-      });
-    } catch (err) {
-      throw new BadRequestException('Something went wrong');
-    }
-  }
+  //       return {
+  //         ...incoming,
+  //         count: incoming.count - outgoingsCount,
+  //       };
+  //     });
+  //   } catch (err) {
+  //     throw new BadRequestException('Something went wrong');
+  //   }
+  // }
 
   async update(id: number, incomingUpdateDTO: IncomingUpdateDTO) {
     try {

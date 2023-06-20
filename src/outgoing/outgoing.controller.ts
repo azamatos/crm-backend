@@ -1,13 +1,4 @@
-import {
-  Body,
-  Controller,
-  Post,
-  Delete,
-  Param,
-  Get,
-  Put,
-  Patch,
-} from '@nestjs/common';
+import { Body, Controller, Post, Param, Get, Patch } from '@nestjs/common';
 
 // project imports
 import { OutgoingService } from './outgoing.service';
@@ -16,18 +7,18 @@ import { OutgoingService } from './outgoing.service';
 export class OutgoingController {
   constructor(private readonly outgoingService: OutgoingService) {}
 
-  @Post('create')
+  @Post()
   create(@Body() createDto: OutgoingCreateDTO) {
     return this.outgoingService.create(createDto);
   }
 
-  @Patch('update')
+  @Patch()
   update(@Body() updateDto: OutgoingUpdateDTO) {
     return this.outgoingService.update(updateDto.id, updateDto);
   }
 
   @Get()
-  getIncomings() {
+  getAll() {
     return this.outgoingService.getAll();
   }
 

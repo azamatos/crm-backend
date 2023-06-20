@@ -7,91 +7,185 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model article {
-  id          Int        @id @default(autoincrement())
-  name        String     @unique
-  description String
-  image_url   String
-  incomings   incoming[]
-  orders      order[]
+model Article {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  articleIncomes   ArticleIncome[]
+  articleOutgoings ArticleOutgoing[]
+  articleOrders    ArticleOrder[]
+
+  @@map("articles")
 }
 
-model incoming {
-  id        Int        @id @default(autoincrement())
-  count     Int
-  price     Int
-  isSold    Boolean    @default(false)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  outgoings outgoing[]
-  article   article    @relation(fields: [articleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  articleId Int
+model Incoming {
+  id        Int      @id @default(autoincrement())
+  isSold    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  articleIncomes ArticleIncome[]
+  outgoings      Outgoing[]
+
+  @@map("incomings")
 }
 
-model outgoing {
-  id            Int          @id @default(autoincrement())
-  price         Int
-  type          outgoingType @default(INCOMING)
-  count         Int          @default(1)
-  createdAt     DateTime     @default(now())
-  incoming      incoming?    @relation(fields: [incomingId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  incomingId    Int?
-  deliveryman   deliveryman? @relation(fields: [deliverymanId], references: [id])
-  deliverymanId Int?
-  order         order?       @relation(fields: [orderId], references: [id])
-  orderId       Int?         @unique
-}
-
-model order {
-  id         Int       @id @default(autoincrement())
+model ArticleIncome {
+  sellPrice  Int
+  primePrice Int
   count      Int
-  price      Int
-  customer   customer  @relation(fields: [customerId], references: [id])
-  completed  Boolean   @default(false)
-  outgoing   outgoing?
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  article    article   @relation(fields: [articleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  createdAt  DateTime @default(now())
+
+  article    Article  @relation(fields: [articleId], references: [id])
   articleId  Int
-  customerId Int
+  incoming   Incoming @relation(fields: [incomingId], references: [id])
+  incomingId Int
+
+  @@unique([articleId, incomingId])
+  @@map("article_incomes")
+}
+
+model Order {
+  id          Int      @id @default(autoincrement())
+  isCompleted Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  customerId    Int
+  customer      Customer       @relation(fields: [customerId], references: [id])
+  outgoings     Outgoing[]
+  articleOrders ArticleOrder[]
+
+  @@map("orders")
+}
+
+model ArticleOrder {
+  sellPrice  Int
+  primePrice Int
+  count      Int
+  createdAt  DateTime @default(now())
+
+  article   Article @relation(fields: [articleId], references: [id])
+  articleId Int
+  order     Order   @relation(fields: [orderId], references: [id])
+  orderId   Int
+
+  @@unique([articleId, orderId])
+  @@map("article_orders")
+}
+
+model Outgoing {
+  id        Int          @id @default(autoincrement())
+  type      OutgoingType @default(INCOME)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  incomingId Int?
+  incoming   Incoming? @relation(fields: [incomingId], references: [id], onDelete: Cascade)
+  order      Order?    @relation(fields: [orderId], references: [id])
+  orderId    Int?
+
+  articleOutgoings  ArticleOutgoing[]
+  otherOutgoings    OtherOutgoing[]
+  deliveryOutgoings DeliveryOutgoing[]
+
+  @@map("outgoings")
+}
+
+model ArticleOutgoing {
+  sum         Int
+  count       Int
+  description String?
+  createdAt   DateTime @default(now())
+
+  article    Article   @relation(fields: [articleId], references: [id])
+  articleId  Int
+  outgoing   Outgoing  @relation(fields: [outgoingId], references: [id])
   outgoingId Int
+  customer   Customer? @relation(fields: [customerId], references: [id])
+  customerId Int?
+
+  @@unique([articleId, outgoingId])
+  @@map("article_outgoings")
 }
 
-model city {
-  id        Int        @id @default(autoincrement())
-  name      String
-  customers customer[]
-  country   country    @relation(fields: [countryId], references: [id])
-  countryId Int
+model OtherOutgoing {
+  sum         Int
+  description String
+  createdAt   DateTime @default(now())
+
+  outgoing   Outgoing @relation(fields: [outgoingId], references: [id])
+  outgoingId Int
+
+  @@unique([outgoingId])
+  @@map("other_outgoings")
 }
 
-model country {
+model DeliveryOutgoing {
+  sum         Int
+  description String?
+  createdAt   DateTime @default(now())
+
+  outgoing      Outgoing    @relation(fields: [outgoingId], references: [id])
+  outgoingId    Int
+  deliveryman   Deliveryman @relation(fields: [deliverymanId], references: [id])
+  deliverymanId Int
+
+  @@unique([outgoingId, deliverymanId])
+  @@map("delivery_outgoings")
+}
+
+model City {
+  id          Int           @id @default(autoincrement())
+  name        String
+  countryId   Int
+  country     Country       @relation(fields: [countryId], references: [id])
+  customers   Customer[]
+  deliverymen Deliveryman[]
+
+  @@map("cities")
+}
+
+model Country {
   id     Int    @id @default(autoincrement())
   name   String
-  cities city[]
+  cities City[]
+
+  @@map("countries")
 }
 
-model customer {
-  id          Int     @id @default(autoincrement())
-  name        String
-  phoneNumber String?
-  desciption  String?
-  city        city?   @relation(fields: [cityId], references: [id])
-  cityId      Int
-  orders      order[]
+model Customer {
+  id               Int               @id @default(autoincrement())
+  name             String
+  phoneNumber      String?
+  desciption       String?
+  cityId           Int
+  city             City              @relation(fields: [cityId], references: [id])
+  articleOutgoings ArticleOutgoing[]
+  orders           Order[]
+
+  @@map("customers")
 }
 
-model deliveryman {
-  id          Int     @id @default(autoincrement())
-  name        String
-  phoneNumber String?
-  desciption  String?
+model Deliveryman {
+  id                Int                @id @default(autoincrement())
+  name              String
+  phoneNumber       String
+  desciption        String?
+  cityId            Int
+  city              City               @relation(fields: [cityId], references: [id])
+  deliveryOutgoings DeliveryOutgoing[]
 
-  outgoings outgoing[]
+  @@map("deliverymen")
 }
 
-enum outgoingType {
-  INCOMING
-  DELIVERY
+enum OutgoingType {
+  INCOME
   ORDER
+  DELIVERY
+  OTHER
 }

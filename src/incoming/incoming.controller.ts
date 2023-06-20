@@ -2,10 +2,8 @@ import {
   Body,
   Controller,
   Post,
-  Delete,
   Param,
   Get,
-  Put,
   UploadedFile,
   UseInterceptors,
   Patch,
@@ -19,12 +17,12 @@ import { FileInterceptor } from '@nestjs/platform-express';
 export class IncomingController {
   constructor(private readonly incomingService: IncomingService) {}
 
-  @Post('create')
+  @Post()
   create(@Body() createDto: IncomingCreateDTO) {
     return this.incomingService.create(createDto);
   }
 
-  @Patch('update')
+  @Patch()
   update(@Body() updateDto: IncomingUpdateDTO) {
     return this.incomingService.update(updateDto.id, updateDto);
   }
@@ -37,7 +35,7 @@ export class IncomingController {
 
   @Get()
   getMyLists() {
-    return this.incomingService.getOrderedByDate(1);
+    return this.incomingService.getAll();
   }
 
   @Get(':id')

@@ -2,19 +2,19 @@ import {
   Body,
   Controller,
   Post,
-  Delete,
   Param,
   Get,
-  Put,
   UploadedFile,
   UseInterceptors,
   Patch,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
 
 // project imports
 import { ArticleService } from './article.service';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
+
+// utils
 import { editFileName } from 'src/utils/uploadUtils';
 
 const storage = {
@@ -28,12 +28,12 @@ const storage = {
 export class ArticleController {
   constructor(private readonly articleService: ArticleService) {}
 
-  @Post('create')
+  @Post()
   create(@Body() createDto: ArticleCreateDTO) {
     return this.articleService.create(createDto);
   }
 
-  @Patch('update')
+  @Patch()
   update(@Body() updateDto: ArticleUpdateDTO) {
     return this.articleService.update(updateDto.id, updateDto);
   }
@@ -49,6 +49,16 @@ export class ArticleController {
   @Get()
   getArticles() {
     return this.articleService.getAll();
+  }
+
+  @Get(':id/incomes')
+  getArticleIncomes(@Param('id') id: string) {
+    return this.articleService.getIncomes(id);
+  }
+
+  @Get(':id/outgoings')
+  getArticleOutgoings(@Param('id') id: string) {
+    return this.articleService.getOutgoings(id);
   }
 
   @Get(':id')

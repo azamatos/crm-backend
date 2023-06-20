@@ -1,18 +1,55 @@
 interface Order {
   id: number;
-  count: number;
-  customer: Omit<CustomerUpdateDTO, 'orderId'>;
-  completed: boolean;
-  outgoing?: Omit<OutgoingUpdateDTO, 'orderId'>;
+  isCompleted: boolean;
   createdAt: Date;
   updatedAt: Date;
-  article: ArticleUpdateDTO;
+  customer: Omit<Customer, 'orders'>;
+  outgoings?: Omit<Outgoing, 'order'>[];
+  articleOrders?: Omit<ArticleOrder, 'order'>[];
+}
+
+interface CustomerOrder extends BasicOrder {
+  articleOrders: Omit<ArticleOrder, 'order'>[];
+}
+
+interface BasicOrder {
+  id: number;
+  isCompleted: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface OrderCreateDTO {
+  isCompleted: boolean;
+  customerId: number;
 }
 
 interface OrderUpdateDTO {
   id: number;
+  isCompleted?: boolean;
+  customerId?: number;
+}
+
+interface ArticleOrder {
+  sellPrice: number;
+  primePrice: number;
   count: number;
-  customerId: number;
-  completed: boolean;
+  article: BasicArticle;
+  order: Omit<Order, 'articleOrders'>;
+}
+
+interface ArticleOrderCreateDTO {
+  sellPrice: number;
+  primePrice: number;
+  count: number;
   articleId: number;
+  orderId: number;
+}
+
+interface ArticleOrderUpdateDTO {
+  sellPrice?: number;
+  primePrice?: number;
+  count?: number;
+  articleId?: number;
+  orderId?: number;
 }
