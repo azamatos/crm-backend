@@ -1,19 +1,54 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 
 // project imports
-import { IncomingService } from '../incoming/incoming.service';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class OutgoingService {
-  constructor(
-    private prisma: PrismaService,
-    private incomingService: IncomingService,
-  ) {}
+  constructor(private prisma: PrismaService) {}
   async create(createDTO: OutgoingCreateDTO) {
     try {
+      const {
+        type,
+        articleOutgoings,
+        customerId,
+        deliveryOutgoings,
+        incomingId,
+        orderId,
+        otherOutgoings,
+      } = createDTO;
+
       return await this.prisma.outgoing.create({
-        data: createDTO,
+        data: {
+          customerId,
+          incomingId,
+          type,
+          orderId,
+          articleOutgoings:
+            type === 'INCOME' || type === 'ORDER'
+              ? {
+                  createMany: {
+                    data: articleOutgoings,
+                  },
+                }
+              : {},
+          deliveryOutgoings:
+            type === 'DELIVERY'
+              ? {
+                  createMany: {
+                    data: deliveryOutgoings,
+                  },
+                }
+              : {},
+          otherOutgoings:
+            type === 'OTHER'
+              ? {
+                  createMany: {
+                    data: otherOutgoings,
+                  },
+                }
+              : {},
+        },
       });
       // getting ordered by created date incomings, to sell them by FIFO
       // const incomings = await this.incomingService.getOrderedByDate(

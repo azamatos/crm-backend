@@ -2,35 +2,46 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 
 // project imports
 import { PrismaService } from '../prisma/prisma.service';
-import { convertExcelToIncoming } from 'src/utils/uploadUtils';
 
 @Injectable()
-export class IncomingService {
+export class OrderService {
   constructor(private prisma: PrismaService) {}
-  async create(
-    createDTO: ArticleIncomeCreateDTO[],
-  ): Promise<IncomingCreateDTO> {
+  async create(createDTO: OrderCreateDTO): Promise<Omit<Order, 'outgoings'>> {
     try {
-      return await this.prisma.incoming.create({
+      return await this.prisma.order.create({
         data: {
-          articleIncomes: {
+          customerId: createDTO.customerId,
+          articleOrders: {
             createMany: {
-              data: createDTO,
+              data: createDTO.articleOrders,
             },
           },
         },
         select: {
           id: true,
-          isSold: true,
+          isCompleted: true,
           createdAt: true,
           updatedAt: true,
-          articleIncomes: {
+          customer: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          articleOrders: {
             select: {
               count: true,
               createdAt: true,
               primePrice: true,
               sellPrice: true,
-              articleId: true,
+              article: {
+                select: {
+                  id: true,
+                  description: true,
+                  imageUrl: true,
+                  name: true,
+                },
+              },
             },
           },
         },
@@ -42,33 +53,47 @@ export class IncomingService {
 
   async getAll() {
     try {
-      return await this.prisma.incoming.findMany({
-        where: { isSold: false },
+      return await this.prisma.order.findMany({
+        where: { isCompleted: false },
       });
     } catch (err) {
       throw new BadRequestException('Something went wrong');
     }
   }
 
-  async getById(incomingId: string): Promise<IncomingCreateDTO> {
-    const id = Number(incomingId);
+  async getById(orderId: string): Promise<Omit<Order, 'outgoings'>> {
+    const id = Number(orderId);
     try {
-      return await this.prisma.incoming.findFirst({
+      return await this.prisma.order.findFirst({
         where: {
           id,
         },
         select: {
           id: true,
-          isSold: true,
+          isCompleted: true,
           createdAt: true,
           updatedAt: true,
-          articleIncomes: {
+          customer: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          articleOrders: {
             select: {
               primePrice: true,
               sellPrice: true,
               count: true,
               createdAt: true,
-              articleId: true,
+              article: {
+                select: {
+                  id: true,
+                  name: true,
+                  imageUrl: true,
+                  description: true,
+                  createdAt: true,
+                },
+              },
             },
           },
         },
@@ -78,9 +103,9 @@ export class IncomingService {
     }
   }
 
-  // async getOrderedByDate(articleId: number): Promise<Incoming[]> {
+  // async getOrderedByDate(articleId: number): Promise<order[]> {
   //   try {
-  //     const incomings = await this.prisma.incoming.findMany({
+  //     const orders = await this.prisma.order.findMany({
   //       where: { articleId },
   //       orderBy: { createdAt: 'asc' },
   //       select: {
@@ -93,12 +118,12 @@ export class IncomingService {
   //       },
   //     });
 
-  //     return incomings?.map((incoming) => {
-  //       const outgoingsCount = getOutgoingCount(incoming?.outgoings);
+  //     return orders?.map((order) => {
+  //       const outgoingsCount = getOutgoingCount(order?.outgoings);
 
   //       return {
-  //         ...incoming,
-  //         count: incoming.count - outgoingsCount,
+  //         ...order,
+  //         count: order.count - outgoingsCount,
   //       };
   //     });
   //   } catch (err) {
@@ -106,39 +131,21 @@ export class IncomingService {
   //   }
   // }
 
-  async update(id: number, incomingUpdateDTO: IncomingUpdateDTO) {
+  async update(id: number, orderUpdateDTO: OrderUpdateDTO) {
     try {
-      return await this.prisma.incoming.update({
+      return await this.prisma.order.update({
         where: { id },
-        data: incomingUpdateDTO,
+        data: orderUpdateDTO,
       });
     } catch (err) {
       throw new BadRequestException('Something went wrong');
     }
   }
 
-  async uploadFile(file: Express.Multer.File) {
+  async remove(orderId: string) {
+    const id = Number(orderId);
     try {
-      const data = convertExcelToIncoming(file);
-
-      return await this.prisma.incoming.create({
-        data: {
-          articleIncomes: {
-            createMany: {
-              data,
-            },
-          },
-        },
-      });
-    } catch (err) {
-      throw new BadRequestException('Something went wrong');
-    }
-  }
-
-  async remove(incomingId: string) {
-    const id = Number(incomingId);
-    try {
-      return await this.prisma.incoming.delete({
+      return await this.prisma.order.delete({
         where: { id },
       });
     } catch (err) {

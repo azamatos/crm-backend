@@ -19,13 +19,11 @@ interface BasicIncoming {
 }
 
 interface IncomingCreateDTO {
-  isSold: boolean;
-  customerId?: number;
+  articleIncomes: Omit<ArticleIncomeCreateDTO, 'incomingId'>[];
 }
 
 interface IncomingUpdateDTO {
   id: number;
-  customerId?: number;
 }
 
 interface ArticleIncome {

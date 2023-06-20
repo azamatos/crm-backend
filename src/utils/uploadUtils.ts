@@ -35,7 +35,9 @@ const convertExcelToIncoming = (file: Express.Multer.File) => {
   const workbook = XLSX.read(file.buffer, { type: 'buffer' });
   const sheet = workbook.Sheets[workbook.SheetNames[0]];
 
-  return XLSX.utils.sheet_to_json<IncomingCreateDTO>(sheet, { header: 3 });
+  return XLSX.utils.sheet_to_json<ArticleIncomeCreateDTO>(sheet, {
+    header: 3,
+  });
 };
 
 export {

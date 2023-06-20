@@ -8,6 +8,7 @@ import { CustomerModule } from './customer/customer.module';
 import { CityModule } from './city/city.module';
 import { CountryModule } from './country/country.module';
 import { MulterModule } from '@nestjs/platform-express';
+import { OrderModule } from './order/order.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { MulterModule } from '@nestjs/platform-express';
     CustomerModule,
     CityModule,
     CountryModule,
+    OrderModule,
     MulterModule.register({
       dest: './uploads',
     }),

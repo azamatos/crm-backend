@@ -71,12 +71,6 @@ export class ArticleService {
               createdAt: true,
               description: true,
               sum: true,
-              customer: {
-                select: {
-                  id: true,
-                  name: true,
-                },
-              },
             },
           },
         },

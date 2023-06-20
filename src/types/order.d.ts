@@ -3,7 +3,7 @@ interface Order {
   isCompleted: boolean;
   createdAt: Date;
   updatedAt: Date;
-  customer: Omit<Customer, 'orders'>;
+  customer: BasicCustomer;
   outgoings?: Omit<Outgoing, 'order'>[];
   articleOrders?: Omit<ArticleOrder, 'order'>[];
 }
@@ -22,6 +22,7 @@ interface BasicOrder {
 interface OrderCreateDTO {
   isCompleted: boolean;
   customerId: number;
+  articleOrders: ArticleOrderCreateDTO[];
 }
 
 interface OrderUpdateDTO {

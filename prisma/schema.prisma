@@ -88,6 +88,8 @@ model Outgoing {
   incoming   Incoming? @relation(fields: [incomingId], references: [id], onDelete: Cascade)
   order      Order?    @relation(fields: [orderId], references: [id])
   orderId    Int?
+  customer   Customer? @relation(fields: [customerId], references: [id])
+  customerId Int?
 
   articleOutgoings  ArticleOutgoing[]
   otherOutgoings    OtherOutgoing[]
@@ -102,12 +104,10 @@ model ArticleOutgoing {
   description String?
   createdAt   DateTime @default(now())
 
-  article    Article   @relation(fields: [articleId], references: [id])
+  article    Article  @relation(fields: [articleId], references: [id])
   articleId  Int
-  outgoing   Outgoing  @relation(fields: [outgoingId], references: [id])
+  outgoing   Outgoing @relation(fields: [outgoingId], references: [id])
   outgoingId Int
-  customer   Customer? @relation(fields: [customerId], references: [id])
-  customerId Int?
 
   @@unique([articleId, outgoingId])
   @@map("article_outgoings")
@@ -159,14 +159,14 @@ model Country {
 }
 
 model Customer {
-  id               Int               @id @default(autoincrement())
-  name             String
-  phoneNumber      String?
-  desciption       String?
-  cityId           Int
-  city             City              @relation(fields: [cityId], references: [id])
-  articleOutgoings ArticleOutgoing[]
-  orders           Order[]
+  id          Int        @id @default(autoincrement())
+  name        String
+  phoneNumber String?
+  desciption  String?
+  cityId      Int
+  city        City       @relation(fields: [cityId], references: [id])
+  orders      Order[]
+  outgoings   Outgoing[]
 
   @@map("customers")
 }

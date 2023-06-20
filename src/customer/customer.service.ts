@@ -97,19 +97,27 @@ export class CustomerService {
               name: true,
             },
           },
-          articleOutgoings: {
+          outgoings: {
             select: {
-              count: true,
-              description: true,
+              id: true,
+              type: true,
               createdAt: true,
-              sum: true,
-              article: {
+              updatedAt: true,
+              articleOutgoings: {
                 select: {
-                  id: true,
-                  name: true,
-                  articleIncomes: true,
+                  count: true,
                   description: true,
-                  imageUrl: true,
+                  createdAt: true,
+                  sum: true,
+                  article: {
+                    select: {
+                      id: true,
+                      name: true,
+                      articleIncomes: true,
+                      description: true,
+                      imageUrl: true,
+                    },
+                  },
                 },
               },
             },

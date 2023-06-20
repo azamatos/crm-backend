@@ -1,13 +1,17 @@
 interface Outgoing {
   id: number;
   type: OutgoingType;
+
+  customer?: BasicCustomer;
   incoming?: Omit<Incoming, 'outgoings'>;
   order?: Omit<Order, 'outgoings'>;
+
   createdAt: Date;
   updatedAt: Date;
-  articleOutgoings?: ArticleOutgoing[];
-  otherOutgoings?: OtherOutgoing[];
-  deliveryOutgoings?: DeliveryOutgoing[];
+
+  articleOutgoings?: Omit<ArticleOutgoing, 'outgoing'>[];
+  otherOutgoings?: Omit<OtherOutgoing, 'outgoing'>[];
+  deliveryOutgoings?: Omit<DeliveryOutgoing, 'outgoing'>[];
 }
 
 interface BasicOutgoing {
@@ -26,6 +30,10 @@ interface OutgoingCreateDTO {
   type: OutgoingType;
   incomingId?: number;
   orderId?: number;
+  customerId?: number;
+  articleOutgoings?: ArticleOutgoingCreateDTO[];
+  otherOutgoings?: OtherOutgoingCreateDTO[];
+  deliveryOutgoings?: DeliveryOutgoingCreateDTO[];
 }
 
 interface OutgoingUpdateDTO {
@@ -33,6 +41,7 @@ interface OutgoingUpdateDTO {
   type?: OutgoingType;
   incomingId?: number;
   orderId?: number;
+  customerId?: number;
 }
 
 interface DeliveryOutgoing {
@@ -86,7 +95,6 @@ interface ArticleOutgoing {
     'articleOutgoings' | 'articleIncomes' | 'articleOrders'
   >;
   outgoing: Omit<Outgoing, 'articleOutgoings'>;
-  customer: BasicCustomer;
 }
 
 interface ArticleOutgoingCustomer {}
@@ -97,7 +105,6 @@ interface ArticleOutgoingCreateDTO {
   description?: string;
   articleId: number;
   outgoingId: number;
-  customerId?: number;
 }
 
 interface ArticleOutgoingUpdateDTO {

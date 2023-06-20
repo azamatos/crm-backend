@@ -36,5 +36,5 @@ interface CustomerOrders extends Customer {
 }
 
 interface CustomerOutgoings extends Customer {
-  articleOutgoings: Omit<ArticleOutgoing, 'outgoing' | 'customer'>[];
+  outgoings: Omit<Outgoing, 'customer' | 'orders' | 'incomings'>[];
 }

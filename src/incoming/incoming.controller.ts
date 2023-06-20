@@ -18,7 +18,7 @@ export class IncomingController {
   constructor(private readonly incomingService: IncomingService) {}
 
   @Post()
-  create(@Body() createDto: IncomingCreateDTO) {
+  create(@Body() createDto: ArticleIncomeCreateDTO[]) {
     return this.incomingService.create(createDto);
   }
 
@@ -34,12 +34,12 @@ export class IncomingController {
   }
 
   @Get()
-  getMyLists() {
+  getIncomings() {
     return this.incomingService.getAll();
   }
 
   @Get(':id')
-  getList(@Param('id') id: string) {
+  getIncome(@Param('id') id: string) {
     return this.incomingService.getById(id);
   }
 
